@@ -1,0 +1,31 @@
+#redirect-panel .field-wrap {
+    margin-bottom: 10px;
+}
+#redirect-panel .field-wrap [type='url'],
+#redirect-panel .field-wrap [type='select'] {
+    height: 28px;
+}
+#redirect-panel .field-wrap [type='url'] {
+    width: 350px;
+    max-width: 100%;
+}
+.rtl #redirect-panel [type=url] {
+    direction: rtl;
+}
+#redirect-panel .field-notice {
+    margin-top: 10px;
+    padding: 15px;
+    background: #fff;
+}
+#redirect-panel .field-notice-alert {
+    margin-bottom: 20px;
+    padding: 15px;
+    color: #a94442;
+    border: 1px solid transparent;
+    border-color: #ebccd1;
+    border-radius: 4px;
+    background-color: #f2dede;
+}
+#redirect-panel .field-notice-hidden {
+    display: none;
+}
