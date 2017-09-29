@@ -1,9 +1,11 @@
 <?php
 /**
  * Plugin Name:  Contact Form 7 Redirection
+ * Plugin URI:   http://querysol.com/blog/product/contact-form-7-redirection/
  * Description:  Contact Form 7 Add-on - Redirect after mail sent.
- * Version:      1.0.2
+ * Version:      1.2
  * Author:       Query Solutions
+ * Author URI:   http://querysol.com
  * Contributors: querysolutions, yuvalsabar
  * Requires at least: 4.0
  * Tested up to: 4.8.1
@@ -16,7 +18,7 @@ class CF7_Redirect {
     public function __construct() {
         $this->plugin_url       = plugin_dir_url( __FILE__ );
         $this->plugin_path      = plugin_dir_path( __FILE__ );
-        $this->version          = '1.0.2';
+        $this->version          = '1.2';
         $this->add_actions();
     }
 
@@ -72,10 +74,11 @@ class CF7_Redirect {
      */
     public function create_panel_inputs( $post ) {
         wp_nonce_field( 'wpcf7_redirect_page_metaboxes', 'wpcf7_redirect_page_metaboxes_nonce' );
-        $wpcf7_redirect_page                = get_post_meta( $post->id(), '_wpcf7_redirect_page_id', true );
-        $wpcf7_redirect_external_url        = get_post_meta( $post->id(), '_wpcf7_redirect_external_url', true );
-        $wpcf7_redirect_use_external_url    = get_post_meta( $post->id(), '_wpcf7_redirect_use_external_url', true );
-        $wpcf7_redirect_open_in_new_tab     = get_post_meta( $post->id(), '_wpcf7_redirect_open_in_new_tab', true );
+        $wpcf7_redirect_page                    = get_post_meta( $post->id(), '_wpcf7_redirect_page_id', true );
+        $wpcf7_redirect_external_url            = get_post_meta( $post->id(), '_wpcf7_redirect_external_url', true );
+        $wpcf7_redirect_use_external_url        = get_post_meta( $post->id(), '_wpcf7_redirect_use_external_url', true );
+        $wpcf7_redirect_open_in_new_tab         = get_post_meta( $post->id(), '_wpcf7_redirect_open_in_new_tab', true );
+        $wpcf7_redirect_after_sent_script       = get_post_meta( $post->id(), '_wpcf7_redirect_after_sent_script', true );
 
         // The meta box content
         $dropdown_options = array (
@@ -90,31 +93,42 @@ class CF7_Redirect {
         <h3>
             <?php esc_html_e( 'Redirect Settings', 'wpcf7-redirect' );?>
         </h3>
+
         <fieldset>
             <legend>
                 <?php esc_html_e( 'Select a page to redirect to on successful form submission.', 'wpcf7-redirect' );?>      
             </legend>
 
-            <div class="field-wrap">
+            <div class="field-wrap field-wrap-page-id">
                 <?php echo wp_dropdown_pages( $dropdown_options );?>        
             </div>
 
-            <div class="field-wrap">
+            <div class="field-wrap field-wrap-external-url">
                 <input type="url" placeholder="<?php esc_html_e( 'External URL', 'wpcf7-redirect' );?>" name="wpcf7-redirect-external-url" value="<?php echo $wpcf7_redirect_external_url;?>">
             </div>
 
-            <div class="field-wrap">
+            <div class="field-wrap field-wrap-use-external-url">
                 <input type="checkbox" name="wpcf7-redirect-use-external-url" <?php checked( $wpcf7_redirect_use_external_url, 'on', true ); ?>/>
                 <label for="wpcf7-redirect-use-external-url"><?php esc_html_e( 'Use external URL', 'wpcf7-redirect' );?></label>
             </div>
 
-            <div class="field-wrap">
+            <div class="field-wrap field-wrap-open-in-new-tab">
                 <input type="checkbox" name="wpcf7-redirect-open-in-new-tab" <?php checked( $wpcf7_redirect_open_in_new_tab, 'on', true ); ?>/>
                 <label for="wpcf7-redirect-open-in-new-tab"><?php esc_html_e( 'Open page in a new tab', 'wpcf7-redirect' );?></label>
                 <div class="field-notice field-notice-alert field-notice-hidden">
                     <strong><?php esc_html_e( 'Notice!', 'wpcf7-redirect' );?></strong>
                     <?php esc_html_e( 'This option might not work as expected, since browsers often block popup windows. This option depends on the browser settings.', 'wpcf7-redirect' );?>
                 </div>
+            </div>
+            
+            <hr />
+            
+            <div class="field-wrap field-wrap-after-sent-script">
+                <label for="wpcf7-redirect-after-sent-script"><?php esc_html_e( 'Here you can add scripts to run after form sent successfully.', 'wpcf7-redirect' );?></label>
+                <div class="field-message">
+                    <?php esc_html_e( 'Do not include <script> tags.', 'wpcf7-redirect' );?>
+                </div>
+                <textarea name="wpcf7-redirect-after-sent-script" rows="8" cols="50"><?php echo $wpcf7_redirect_after_sent_script;?></textarea>
             </div>
         </fieldset>
         
@@ -143,12 +157,14 @@ class CF7_Redirect {
             $use_external_url   = ( $external_url && $use_external_url ) ? 'on' : '';
             $open_in_new_tab    = isset( $_POST['wpcf7-redirect-open-in-new-tab'] ) ? sanitize_text_field( $_POST['wpcf7-redirect-open-in-new-tab'] ) : '';
             $open_in_new_tab    = $open_in_new_tab ? 'on' : '';
+            $after_sent_script  = isset( $_POST['wpcf7-redirect-after-sent-script'] ) ? sanitize_text_field( $_POST['wpcf7-redirect-after-sent-script'] ) : '';
 
             // Update the stored value
             update_post_meta( $contact_form_id, '_wpcf7_redirect_page_id', $page_id );
             update_post_meta( $contact_form_id, '_wpcf7_redirect_external_url', $external_url );
             update_post_meta( $contact_form_id, '_wpcf7_redirect_use_external_url', $use_external_url );
             update_post_meta( $contact_form_id, '_wpcf7_redirect_open_in_new_tab', $open_in_new_tab );
+            update_post_meta( $contact_form_id, '_wpcf7_redirect_after_sent_script', $after_sent_script );
         }
     }
 
@@ -167,18 +183,21 @@ class CF7_Redirect {
 
             while ( $query->have_posts() ) : $query->the_post();
 
-                $page_id           = get_post_meta( get_the_ID(), '_wpcf7_redirect_page_id', true );
-                $thankyou_page     = $page_id ? get_permalink( $page_id ) : '';
-                $external_url      = get_post_meta( get_the_ID(), '_wpcf7_redirect_external_url', true );
-                $use_external_url  = get_post_meta( get_the_ID(), '_wpcf7_redirect_use_external_url', true );
-                $open_in_new_tab   = get_post_meta( get_the_ID(), '_wpcf7_redirect_open_in_new_tab', true );
+                $page_id                = get_post_meta( get_the_ID(), '_wpcf7_redirect_page_id', true );
+                $thankyou_page          = $page_id ? get_permalink( $page_id ) : '';
+                $external_url           = get_post_meta( get_the_ID(), '_wpcf7_redirect_external_url', true );
+                $use_external_url       = get_post_meta( get_the_ID(), '_wpcf7_redirect_use_external_url', true );
+                $open_in_new_tab        = get_post_meta( get_the_ID(), '_wpcf7_redirect_open_in_new_tab', true );
+                $after_sent_script      = get_post_meta( get_the_ID(), '_wpcf7_redirect_after_sent_script', true );
 
                 $forms[ get_the_ID() ] = array(
-                    'thankyou_page_url' =>  $thankyou_page,
-                    'external_url'      =>  $external_url,
-                    'use_external_url'  =>  $use_external_url,
-                    'open_in_new_tab'  =>  $open_in_new_tab
+                    'thankyou_page_url'     =>  $thankyou_page,
+                    'external_url'          =>  $external_url,
+                    'use_external_url'      =>  $use_external_url,
+                    'open_in_new_tab'       =>  $open_in_new_tab,
+                    'after_sent_script'     =>  $after_sent_script
                 );
+
 
             endwhile; wp_reset_query();
 
@@ -195,17 +214,19 @@ class CF7_Redirect {
 
         // Get the old form ID.
         if ( ! empty( $_REQUEST['post'] ) && ! empty( $_REQUEST['_wpnonce'] ) ) {
-            $post                  = intval( $_REQUEST['post'] );
-            $old_page_id           = get_post_meta( $post, '_wpcf7_redirect_page_id', true );
-            $old_external_url      = get_post_meta( $post, '_wpcf7_redirect_external_url', true );
-            $old_use_external_url  = get_post_meta( $post, '_wpcf7_redirect_use_external_url', true );
-            $old_open_in_new_tab   = get_post_meta( $post, '_wpcf7_redirect_open_in_new_tab', true );
+            $post                       = intval( $_REQUEST['post'] );
+            $old_page_id                = get_post_meta( $post, '_wpcf7_redirect_page_id', true );
+            $old_external_url           = get_post_meta( $post, '_wpcf7_redirect_external_url', true );
+            $old_use_external_url       = get_post_meta( $post, '_wpcf7_redirect_use_external_url', true );
+            $old_open_in_new_tab        = get_post_meta( $post, '_wpcf7_redirect_open_in_new_tab', true );
+            $old_after_sent_script      = get_post_meta( $post, '_wpcf7_redirect_after_sent_script', true );
         }
         // Update the duplicated form.
         update_post_meta( $contact_form_id, '_wpcf7_redirect_page_id', $old_page_id );
         update_post_meta( $contact_form_id, '_wpcf7_redirect_external_url', $old_external_url );
         update_post_meta( $contact_form_id, '_wpcf7_redirect_use_external_url', $old_use_external_url );
         update_post_meta( $contact_form_id, '_wpcf7_redirect_open_in_new_tab', $old_open_in_new_tab );
+        update_post_meta( $contact_form_id, '_wpcf7_redirect_after_sent_script', $old_after_sent_script );
     }
 
     /**

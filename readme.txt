@@ -43,6 +43,9 @@ No. One of the reasons we developed this plugin, is because on_send_ok is now de
 
 == Changelog ==
 
+= 1.2 =
+* Added option to add script after the form has been sent successfully.
+
 = 1.0.2 =
 * Added full support for form duplication.
 * Added option to open page in a new tab.
