@@ -2,7 +2,7 @@
 Tags: contact form 7 redirect, contact form 7 thank you page, redirect cf7, redirect contact form 7, contact form 7 success page, cf7 redirect
 Contributors: yuvalsabar
 Requires at least: 4.0.0
-Tested up to: 4.8.1
+Tested up to: 4.9.1
 Stable tag: 1.0.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -42,6 +42,9 @@ No. One of the reasons we developed this plugin, is because on_send_ok is now de
 1. Redirect Settings tab
 
 == Changelog ==
+
+= 1.2.1 =
+* Fixed: redirection not working in old iOS versions.
 
 = 1.2 =
 * Added option to add script after the form has been sent successfully.

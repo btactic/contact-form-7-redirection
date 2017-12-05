@@ -6,10 +6,10 @@
     height: 28px;
 }
 #redirect-panel .field-wrap [type='url'] {
-    width: 350px;
-    max-width: 100%;
+    width: 100%;
 }
 #redirect-panel .field-wrap textarea {
+    direction: ltr;
     width: 100%;
 }
 #redirect-panel .field-wrap-after-sent-script {
@@ -21,23 +21,24 @@
 #redirect-panel .field-wrap-after-sent-script .field-message {
     margin-bottom: 10px;
 }
-.rtl #redirect-panel [type=url] {
-    direction: rtl;
-}
 #redirect-panel .field-notice {
     margin-top: 10px;
+    margin-bottom: 20px;
     padding: 15px;
+    border: 1px solid;
+    border-radius: 4px;
     background: #fff;
 }
 #redirect-panel .field-notice-alert {
-    margin-bottom: 20px;
-    padding: 15px;
-    color: #a94442;
-    border: 1px solid transparent;
-    border-color: #ebccd1;
-    border-radius: 4px;
-    background-color: #f2dede;
+    color: #8a6d3b;
+    border: 1px solid #faebcc;
+    background-color: #fcf8e3;
 }
 #redirect-panel .field-notice-hidden {
     display: none;
+}
+#redirect-panel .field-warning-alert {
+    color: #a94442;
+    border-color: #ebccd1;
+    background-color: #f2dede;
 }
