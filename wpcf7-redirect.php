@@ -10,7 +10,7 @@
  * Requires at least: 4.0
  *
  * Text Domain: wpcf7-redirect
- * Domain Path: /languages
+ * Domain Path: /lang
  *
  * @package Contact Form 7 Redirection
  * @category Contact Form 7 Addon
@@ -181,7 +181,8 @@ class WPCF7_Redirect {
 	}
 
 	/**
-	 * Get CF7 Forms ID's and it's Thank You Page.
+	 * Push all forms redirect settings data into an array.
+	 * @return array  Form redirect settings data
 	 */
 	public function get_forms() {
 		$args = array(
