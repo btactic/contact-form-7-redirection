@@ -33,6 +33,7 @@ class WPCF7_Redirect {
 		$this->plugin_path      = plugin_dir_path( __FILE__ );
 		$this->version          = '1.2.2';
 		$this->add_actions();
+		$this->add_filters();
 	}
 
 	/**
@@ -46,6 +47,9 @@ class WPCF7_Redirect {
 		add_action( 'wpcf7_after_save', array( $this, 'store_meta' ) );
 		add_action( 'wpcf7_after_create', array( $this, 'duplicate_form_support' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notice' ) );
+		add_action( 'wp_ajax_is_multisite',array( $this, 'is_multisite' ) );
+		add_action( 'admin_init',array( $this, 'register' ) );
+		add_action( 'admin_menu',array( $this, 'options_page' ) );
 	}
 
 	/**
@@ -115,6 +119,18 @@ class WPCF7_Redirect {
 				'name' => 'after_sent_script',
 				'type' => 'textarea',
 			),
+            array(
+				'name' => 'relative_url',
+				'type' => 'text',
+			),
+            array(
+				'name' => 'use_relative_url',
+				'type' => 'checkbox',
+			),
+            array(
+				'name' => 'ajaxurl',
+				'type' => 'ajaxurl',
+			),
 		);
 
 		return $fields;
@@ -158,6 +174,9 @@ class WPCF7_Redirect {
 
 				switch ( $field['type'] ) {
 					case 'text':
+						$value = sanitize_text_field( $value );
+						break;
+
 					case 'checkbox':
 						$value = sanitize_text_field( $value );
 						break;
@@ -172,6 +191,10 @@ class WPCF7_Redirect {
 
 					case 'url':
 						$value = esc_url( filter_var( $value, FILTER_SANITIZE_URL ) );
+						break;
+
+					case 'ajaxurl':
+						$value = admin_url( 'admin-ajax.php' );
 						break;
 				}
 
@@ -318,6 +341,18 @@ class WPCF7_Redirect {
 			</label>
 		</div>
 
+		<div class="field-wrap field-wrap-relative-url">
+			<input type="text" id="wpcf7-redirect-relative-url" placeholder="<?php esc_html_e( 'Relative URL', 'wpcf7-redirect' );?>" name="wpcf7-redirect[relative_url]" value="<?php echo $fields['relative_url'];?>">
+		</div>
+
+		<div class="field-wrap field-wrap-use-relative-url">
+			<input type="checkbox" id="wpcf7-redirect-use-relative-url" name="wpcf7-redirect[use_relative_url]" <?php checked( $fields['use_relative_url'], 'on', true ); ?>/>
+			<label for="wpcf7-redirect-use-relative-url">
+				<?php esc_html_e( 'Use relative URL', 'wpcf7-redirect' );?>
+			</label>
+		</div>
+
+
 		<div class="field-wrap field-wrap-http-build-query">
 			<input type="checkbox" id="wpcf7-redirect-http-build-query" name="wpcf7-redirect[http_build_query]" <?php checked( $fields['http_build_query'], 'on', true ); ?>/>
 			<label for="wpcf7-redirect-http-build-query">
@@ -356,6 +391,79 @@ class WPCF7_Redirect {
 		</fieldset>
 
 		<?php
+		if ( is_multisite() ) {
+			echo 'Multisite is enabled, if the multisite works and this option is checked, the relative redirect will be the first to be applied.';
+		} else {
+			echo 'Multisite is not enabled, if multisite does not work and this option is checked, the relative redirect will not be applied, consequently the external url will be applied and if not the wordpress page configured.';
+		}
+	}
+
+	/**
+	* All filters
+	*/
+	private function add_filters() {
+		add_filter( 'wpcf7_skip_mail',array( $this, 'no_send_email' ) );
+	}
+
+	/**
+	*Options Page Create
+	*/
+	public function options_page() {
+		add_options_page( 'Settings', 'Wpcf7 redirect Settings', 'manage_options', 'not-send', array( $this, 'settings' ) );
+	}
+
+	/**
+	*Register setting options page
+	*/
+	public function register() {
+		register_setting( 'not-send-settings', 'do-not-send-email' );
+	}
+
+	/**
+	*Settings
+	*/
+	public function settings() {
+	?>
+	<div class="wrap">
+		<form action="options.php" method="post">
+			<?php
+			settings_fields( 'not-send-settings' );
+			do_settings_sections( 'not-send-settings' );
+			?>
+
+			<h1>Settings</h1>
+			<br>
+			<label>
+				<input type="checkbox" name="do-not-send-email"<?php echo esc_attr( get_option( 'do-not-send-email' ) ) == 'on' ? 'checked="checked"' : ''; ?> />Do not send email </label><br/>
+			<?php submit_button(); ?>
+		</form>
+	</div>
+	<?php
+	}
+	/**
+	*Do not send email
+	*/
+	public function no_send_email( $f ) {
+		if (get_option( 'do-not-send-email' ) == 'on'){
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	* Is multisite ajax
+	*/
+	public function is_multisite() {
+		global $wpdb;
+		$multisite = $_POST[ 'multisite' ];
+		if ( is_multisite()) {
+			$multisite = 'TRUE';
+		} else {
+			$multisite = 'FALSE';
+				}
+		echo $multisite;
+		wp_die();
 	}
 }
 
