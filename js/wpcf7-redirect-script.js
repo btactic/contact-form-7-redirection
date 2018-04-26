@@ -10,7 +10,6 @@ function wpcf7_redirect_mailsent_handler() {
 		if ( form.after_sent_script ) {
 			eval( form.after_sent_script );
 		}
-	
 
 		// Redirect to external URL.
 		if ( form.use_external_url && form.external_url ) {

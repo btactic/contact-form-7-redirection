@@ -8,6 +8,9 @@
 #redirect-panel .field-wrap [type='url'] {
     width: 100%;
 }
+#redirect-panel .field-wrap [type='checkbox'] {
+    margin-top: 1px;
+}
 #redirect-panel .field-wrap textarea {
     direction: ltr;
     width: 100%;
