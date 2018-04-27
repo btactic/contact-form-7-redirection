@@ -49,6 +49,7 @@ class WPCF7_Redirect {
 		add_action( 'wpcf7_submit', array( $this, 'non_ajax_redirection' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notice' ) );
 		add_action( 'wp_ajax_is_multisite',array( $this, 'is_multisite' ) );
+		add_action( 'wp_ajax_no_priv_is_multisite',array( $this, 'is_multisite' ) );
 		add_action( 'admin_init',array( $this, 'register' ) );
 		add_action( 'admin_menu',array( $this, 'options_page' ) );
 	}
