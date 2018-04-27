@@ -3,11 +3,11 @@
  * Plugin Name:  Contact Form 7 Redirection
  * Plugin URI:   http://querysol.com/blog/product/contact-form-7-redirection/
  * Description:  Contact Form 7 Add-on - Redirect after mail sent.
- * Version:      1.2.2
+ * Version:      1.2.6
  * Author:       Query Solutions
  * Author URI:   http://querysol.com
  * Contributors: querysolutions, yuvalsabar
- * Requires at least: 4.0
+ * Requires at least: 4.7.0
  *
  * Text Domain: wpcf7-redirect
  * Domain Path: /lang
@@ -31,7 +31,7 @@ class WPCF7_Redirect {
 	public function __construct() {
 		$this->plugin_url       = plugin_dir_url( __FILE__ );
 		$this->plugin_path      = plugin_dir_path( __FILE__ );
-		$this->version          = '1.2.2';
+		$this->version          = '1.2.6';
 		$this->add_actions();
 		$this->add_filters();
 	}
@@ -46,6 +46,7 @@ class WPCF7_Redirect {
 		add_action( 'wpcf7_editor_panels', array( $this, 'add_panel' ) );
 		add_action( 'wpcf7_after_save', array( $this, 'store_meta' ) );
 		add_action( 'wpcf7_after_create', array( $this, 'duplicate_form_support' ) );
+		add_action( 'wpcf7_submit', array( $this, 'non_ajax_redirection' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notice' ) );
 		add_action( 'wp_ajax_is_multisite',array( $this, 'is_multisite' ) );
 		add_action( 'admin_init',array( $this, 'register' ) );
@@ -73,6 +74,10 @@ class WPCF7_Redirect {
 	public function enqueue_frontend() {
 		wp_enqueue_script( 'wpcf7-redirect-script', $this->plugin_url . 'js/wpcf7-redirect-script.js', array(), null, true );
 		wp_localize_script( 'wpcf7-redirect-script', 'wpcf7_redirect_forms', $this->get_forms() );
+
+		if ( isset( $this->enqueue_new_tab_script ) && $this->enqueue_new_tab_script ){
+			wp_add_inline_script( 'wpcf7-redirect-script', 'window.open("'. $this->redirect_url .'");' );
+		}
 	}
 
 	/**
@@ -190,7 +195,7 @@ class WPCF7_Redirect {
 						break;
 
 					case 'url':
-						$value = esc_url( filter_var( $value, FILTER_SANITIZE_URL ) );
+						$value = esc_url_raw( $value );
 						break;
 
 					case 'ajaxurl':
@@ -268,13 +273,16 @@ class WPCF7_Redirect {
 			$wpcf7_path = plugin_dir_path( dirname( __FILE__ ) ) . 'contact-form-7/wp-contact-form-7.php';
 			$wpcf7_data = get_plugin_data( $wpcf7_path, false, false );
 
-			// If CF7 version is < 4.2.0.
-			if ( $wpcf7_data['Version'] < 4.2 ) {
+			// If CF7 version is < 4.8.
+			if ( $wpcf7_data['Version'] < 4.8 ) {
 				?>
 
-				<div class="error notice">
+				<div class="wpcf7-redirect-error error notice">
+					<h3>
+						<?php esc_html_e( 'Contact Form Redirection', 'wpcf7-redirect' );?>
+					</h3>
 					<p>
-						<?php esc_html_e( 'Error: Please update Contact Form 7.', 'wpcf7-redirect' );?>
+						<?php esc_html_e( 'Error: Contact Form 7 version is too old. Contact Form Redirection is compatible from version 4.8 and above. Please update Contact Form 7.', 'wpcf7-redirect' );?>
 					</p>
 				</div>
 
@@ -282,17 +290,59 @@ class WPCF7_Redirect {
 			}
 		} else {
 			// If CF7 isn't installed and activated, throw an error.
-			$wpcf7_path = plugin_dir_path( dirname( __FILE__ ) ) . 'contact-form-7/wp-contact-form-7.php';
-			$wpcf7_data = get_plugin_data( $wpcf7_path, false, false );
 			?>
-
-			<div class="error notice">
+			<div class="wpcf7-redirect-error error notice">
+				<h3>
+					<?php esc_html_e( 'Contact Form Redirection', 'wpcf7-redirect' );?>
+				</h3>
 				<p>
 					<?php esc_html_e( 'Error: Please install and activate Contact Form 7.', 'wpcf7-redirect' );?>
 				</p>
 			</div>
 
 			<?php
+		}
+	}
+
+	/**
+	 * Add plugin support to browsers that don't support ajax 
+	 */
+	public function non_ajax_redirection( $contact_form ) {
+		$this->fields = $this->get_fields_values( $contact_form->id() );
+
+		if ( isset( $this->fields ) && ! WPCF7_Submission::is_restful() ) {
+			$submission   = WPCF7_Submission::get_instance();
+
+			if ( $submission->get_status() == 'mail_sent' ) {
+
+				// Use extrnal url
+				if ( $this->fields['external_url'] && $this->fields['use_external_url'] == 'on' ) {
+					$this->redirect_url = $this->fields['external_url'];
+				} else {
+					$this->redirect_url = get_permalink( $this->fields['page_id'] );
+				}
+
+				// Pass fields from the form as URL query parameters
+				if ( isset( $this->redirect_url ) && $this->redirect_url ) {	
+					if ( $this->fields['http_build_query'] == 'on' ) {
+						$posted_data  = $submission->get_posted_data();
+						// Remove WPCF7 keys from posted data
+						$remove_keys  = array( '_wpcf7', '_wpcf7_version', '_wpcf7_locale', '_wpcf7_unit_tag', '_wpcf7_container_post' );
+						$posted_data  = array_diff_key( $posted_data, array_flip( $remove_keys ) );
+						$this->redirect_url = add_query_arg( $posted_data, $this->redirect_url );
+					}
+				}
+
+				// Open link in a new tab
+				if ( isset( $this->redirect_url ) && $this->redirect_url ) {
+					if ( $this->fields['open_in_new_tab'] == 'on' ) {
+						$this->enqueue_new_tab_script = true;
+					} else {
+						wp_redirect( $this->redirect_url );
+						exit;
+					}
+				}
+			}
 		}
 	}
 

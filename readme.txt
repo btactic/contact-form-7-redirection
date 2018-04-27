@@ -1,9 +1,9 @@
 === Contact Form 7 Redirection ===
 Tags: contact form 7 redirect, contact form 7 thank you page, redirect cf7, redirect contact form 7, contact form 7 success page, cf7 redirect
 Contributors: yuvalsabar
-Requires at least: 4.0.0
-Tested up to: 4.9.1
-Stable tag: 1.2.2
+Requires at least: 4.7.0
+Tested up to: 4.9.4
+Stable tag: 1.2.6
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -12,7 +12,7 @@ A simple add-on for Contact Form 7 that adds a redirect option after form sent s
 == Description ==
 
 A straightforward add-on plugin for Contact Form 7 - adds the option to redirect to any page you choose after mail sent successfully, with DOM Events and without AJAX being disabled.
-NOTE: This plugin requires Contact Form 7 version 4.2 or later. 
+NOTE: This plugin requires Contact Form 7 version 4.8 or later. 
 
 == Usage ==
 
@@ -43,13 +43,21 @@ No. One of the reasons we developed this plugin, is because on_send_ok is now de
 
 == Changelog ==
 
+= 1.2.6 =
+* Added support for browsers that don't support AJAX.
+* Minor CSS changes.
+
+= 1.2.5 =
+* Added error message if Contact Form 7 version is earlier than 4.8.
+
+= 1.2.4 =
+* Fixed a bug regarding sanitizing URL, causing & to change to #038;
+* Unnecessary variables removed.
+
 = 1.2.2 =
 * New feature: Pass fields from the form as URL query parameters.
 * Minor CSS changes.
 * Dev improvements.
-
-= 1.2.1 =
-* Fixed: redirection not working in old iOS versions.
 
 = 1.2 =
 * Added option to add script after the form has been sent successfully.
