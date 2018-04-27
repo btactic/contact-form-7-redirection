@@ -68,6 +68,6 @@ function wpcf7_redirect_mailsent_handler() {
 				}
 			}
 
-	}, false );
+	}}, false );
 	});
 }
